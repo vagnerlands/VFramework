@@ -7,6 +7,8 @@ import android.util.Log;
 import android.view.SurfaceView;
 
 import lobster.heroquestproj.MainActivity;
+import lobster.heroquestproj.RenderEngine;
+import lobster.heroquestproj.Screen;
 
 /**
  * Created by Vagner on 8/20/2016.
@@ -69,6 +71,11 @@ public class CSharedUtils {
 
     public SurfaceView getmSurfaceView() {
         return mSurfaceViewObj;
+    }
+
+    public void setCurrentScreenView(Screen newScreen) {
+        // not the best approach - but for this project, all SurfaceViewObj will be a RenderEngine type which derives from SurfaceView
+        ((RenderEngine)mSurfaceViewObj).setCurrentScreen(newScreen);
     }
 
     public void setStartCycle() {

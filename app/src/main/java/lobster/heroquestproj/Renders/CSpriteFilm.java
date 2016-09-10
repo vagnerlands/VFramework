@@ -93,12 +93,23 @@ public class CSpriteFilm extends CSpriteBase {
     }
 
     public void draw(Canvas c) {
+        // if this layer isn't displayed - do nothing
+        if (mVisible == false) return;
+        // draws the current frame according to the current animation state
         if ((CSharedUtils.instance().getmHeartBit() % mAnimationSpeed) == 0) mCurrentDisplayFrame++;
 
         if (mCurrentDisplayFrame == mTotalNumOfFrames) mCurrentDisplayFrame = 0;
 
         // updates the screen dimensions
-        setScreenDimensions(CSharedUtils.instance().getmSurfaceView().getWidth(), CSharedUtils.instance().getmSurfaceView().getHeight());
+        // always assuming that the given coordinates refer to the top left corner
+        if ((mFixedX > 0.0f) && (mFixedY > 0.0f)) {
+            this.left = mFixedX;
+            this.top = mFixedY + (mSpriteFrameHeight * mScaleY) ;
+            this.right = mFixedX + (mSpriteFrameWidth * mScaleX);
+            this.bottom = mFixedY;
+        } else {
+            setScreenDimensions(CSharedUtils.instance().getmSurfaceView().getWidth(), CSharedUtils.instance().getmSurfaceView().getHeight());
+        }
 
         // draw the screen
         this.set(this.left, this.bottom, this.right, this.top);

@@ -12,6 +12,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -48,19 +49,34 @@ public class MainActivity extends ActionBarActivity {
             CFontCollection.instance().addFont("comics.ttf", EFonts.COMICS, 1.0f);
             // load all game textures
             CTextureCollection.instance().addTexture("heroquest.png", ETexture.WELCOME_SCREEN_BACKGROUND);
+            CTextureCollection.instance().addTexture("medieval_village.png", ETexture.CHARACTER_SCREEN_BACKGROUND);
             CTextureCollection.instance().addTexture("startBut.png", ETexture.START_BUTTON);
+            CTextureCollection.instance().addTexture("startButBack.png", ETexture.START_BUTTON_BACKGROUND);
             CTextureCollection.instance().addTexture("campfire_raw.png", ETexture.CAMPFIRE_ANIMATED);
             CTextureCollection.instance().addTexture("sprite-steps.png", ETexture.SPRITE_STEPS);
             CTextureCollection.instance().addTexture("paladinForwardSprite.png", ETexture.SPRITE_PALADIN);
+            CTextureCollection.instance().addTexture("menu_exit.png", ETexture.MENU_EXIT_DOOR);
+            CTextureCollection.instance().addTexture("paladin_portrait.png", ETexture.PALADIN_PORTRAIT);
+            CTextureCollection.instance().addTexture("elf_portrait.png", ETexture.ELF_PORTRAIT);
+            CTextureCollection.instance().addTexture("elfForwardSprite.png", ETexture.SPRITE_ELF);
+            CTextureCollection.instance().addTexture("mage_portrait.png", ETexture.MAGE_PORTRAIT);
+            CTextureCollection.instance().addTexture("mageForwardSprite.png", ETexture.SPRITE_MAGE);
             // load all sound libraries
-            CSoundCollection.instance().addSound("background.mp3", ESounds.ENTRY_SCREEN_BACKGROUND_TRACK);
+            //CSoundCollection.instance().addSound("menu_background.mp3", ESounds.MENU_BACKGROUND_TRACK);
+            CSoundCollection.instance().addSound("pause.mp3", ESounds.GAME_IS_PAUSED);
+            CSoundCollection.instance().addSound("start.wav", ESounds.PLAY_BUTTON_PRESSED);
+            CSoundCollection.instance().addSound("metal_impact.wav", ESounds.METAL_IMPACT);
+            CSoundCollection.instance().addSound("femalethankyou.mp3", ESounds.FEMALE_THANK_YOU);
+            CSoundCollection.instance().addSound("victory.mp3", ESounds.FIGHT_VICTORY);
+            CSoundCollection.instance().addSound("levelup.mp3", ESounds.LEVEL_UP);
+            CSoundCollection.instance().addSound("goodbye_female.wav", ESounds.GOODBYE_FEMALE);
 
 
             CSharedUtils.instance().getSoundPool().setOnLoadCompleteListener(new SoundPool.OnLoadCompleteListener() {
                 @Override
                 public void onLoadComplete(SoundPool soundPool, int i, int i1) {
                     CSoundCollection.instance().mSoundIsReady = true;
-                    CSoundCollection.instance().playSound(ESounds.ENTRY_SCREEN_BACKGROUND_TRACK);
+                    //CSoundCollection.instance().playSound(ESounds.MENU_BACKGROUND_TRACK);
                 }
             });
 
@@ -87,13 +103,13 @@ public class MainActivity extends ActionBarActivity {
     protected void onResume() {
         super.onResume();
         mRenderEngine.resume();
-        CSoundCollection.instance().playSound(ESounds.ENTRY_SCREEN_BACKGROUND_TRACK);
+        //CSoundCollection.instance().playSound(ESounds.ENTRY_SCREEN_BACKGROUND_TRACK);
     }
 
 
     protected void onStop() {
         super.onStop();
-        CSoundCollection.instance().stopSound(ESounds.ENTRY_SCREEN_BACKGROUND_TRACK);
+        //CSoundCollection.instance().playSound(ESounds.GAME_IS_PAUSED);
         mRenderEngine.pause();
     }
 
@@ -103,7 +119,7 @@ public class MainActivity extends ActionBarActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        CSoundCollection.instance().stopSound(ESounds.ENTRY_SCREEN_BACKGROUND_TRACK);
+        CSoundCollection.instance().playSound(ESounds.GAME_IS_PAUSED);
         mRenderEngine.pause();
     }
 
@@ -113,6 +129,13 @@ public class MainActivity extends ActionBarActivity {
         // intentionally removed
         //getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
+    }
+
+    @Override
+    public void onBackPressed() {
+        Toast.makeText(mRenderEngine.getContext(), "Back button pressed", Toast.LENGTH_LONG);
+        Log.d(LOG_ID, "Back button pressed");
+        CSharedUtils.instance().setCurrentScreenView(new WelcomeScreen());
     }
 
     @Override

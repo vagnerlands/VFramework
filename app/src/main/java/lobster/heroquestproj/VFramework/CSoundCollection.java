@@ -45,7 +45,18 @@ public class CSoundCollection {
                 0.9f, // left volume
                 0.9f, // right volume
                 0, // priority ???
-                -1, // loop
+                0, // loop
+                1.0f); // rate
+        Log.d(MainActivity.LOG_ID, "playSound st " + retCode);
+    }
+
+    public void playSoundInLoop(ESounds soundOpt) {
+        int retCode = CSharedUtils.instance().getSoundPool().play(
+                mSoundsDB.get(soundOpt).getSoundStream(),
+                0.9f, // left volume
+                0.9f, // right volume
+                0, // priority ???
+                -1, // loop (-1 for infinite)
                 1.0f); // rate
         Log.d(MainActivity.LOG_ID, "playSound st " + retCode);
     }

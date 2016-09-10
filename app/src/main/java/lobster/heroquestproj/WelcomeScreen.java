@@ -5,21 +5,20 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-import android.os.Handler;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import lobster.heroquestproj.Renders.CSprite;
 import lobster.heroquestproj.Renders.CSpriteBase;
-import lobster.heroquestproj.Renders.CSpriteFilm;
+import lobster.heroquestproj.VFramework.CFontCollection;
 import lobster.heroquestproj.VFramework.CSharedUtils;
+import lobster.heroquestproj.VFramework.CSoundCollection;
 import lobster.heroquestproj.VFramework.CTextureCollection;
 import lobster.heroquestproj.VFramework.EFonts;
-import lobster.heroquestproj.VFramework.CFontCollection;
+import lobster.heroquestproj.VFramework.ESounds;
 import lobster.heroquestproj.VFramework.ETexture;
 
 /**
@@ -27,40 +26,80 @@ import lobster.heroquestproj.VFramework.ETexture;
  */
 public class WelcomeScreen extends Screen {
     private int colorAltRGB = 0x0;
-    private Handler mHandler;
+    //private Handler mHandler;
     Bitmap backgroundScreen;
     Rect backgroundRect = new Rect(); // generic rect for scaling
+    // object for drawing purposes
+    Paint mObjectDrawer = new Paint();
     List<CSpriteBase> mObjectList = new ArrayList();
     // relative position in the screen
     // left-right 1/4
     // up-bottom 3/4
     // creates a start animated actor
     CSprite mStartButton = new CSprite(ETexture.START_BUTTON, 0.25f, 0.75f);
+    // creates a start animated actor
+    CSprite mSelectedButton = new CSprite(ETexture.START_BUTTON_BACKGROUND, 0.25f, 0.75f);
 
     // creates a exit animated button
-    CSpriteFilm mExitButton = new CSpriteFilm(ETexture.SPRITE_STEPS, 0.75f, 0.75f, 10, 50, 72, 5);
+    CSprite mExitButton = new CSprite(ETexture.MENU_EXIT_DOOR, 0.75f, 0.75f);
 
     // creates a paladin animated actor
-    CSpriteFilm mPaladin = new CSpriteFilm(ETexture.SPRITE_PALADIN, 0.50f, 0.50f, 6, (int)(624/6), 151, 7);
-
-    // object for drawing purposes
-    Paint mObjectDrawer = new Paint();
+    //CSpriteFilm mPaladin = new CSpriteFilm(ETexture.SPRITE_PALADIN, 0.50f, 0.50f, 6, (int)(624/6), 151, 7);
 
     public WelcomeScreen() {
         backgroundScreen = CTextureCollection.instance().getTexture(ETexture.WELCOME_SCREEN_BACKGROUND);
-        // some specific assignings
+        // START button initialization
         mStartButton.mLabel = "PLAY";
-        //mStartButton.setScaleFactor(1.0f);
+        mStartButton.mTouchEvent = (new Runnable() {
+            @Override
+            public void run() {
+                mStartButton.startBouncing(1.1f, 1.0f, 2200, 0);
+                CSoundCollection.instance().playSound(ESounds.PLAY_BUTTON_PRESSED);
+                mSelectedButton.setVisibility(true); // makes it visible again
+
+                // adds an event to the end of the animation - enters to the "Select your Character" Screen
+                mStartButton.mEndAnimationEvent = (new Runnable() {
+                    @Override
+                    public void run() {
+                        mSelectedButton.setVisibility(false); // makes it invisble again
+                        // set a new screen to be displayed
+                        CSharedUtils.instance().setCurrentScreenView(new CharacterSelectScreen());
+                    }
+                });
+            }
+        });
+
+        // SELECTED button initialization
+        mSelectedButton.setVisibility(false); // invisible at the beggining
+        mSelectedButton.setScaleFactor(2f);
+
+
+        // EXIT button initialization
         mExitButton.mLabel = "EXIT";
-        mExitButton.setScaleFactor(3.0f);
+        mExitButton.mTouchEvent = (new Runnable() {
+            @Override
+            public void run() {
+                mExitButton.startBouncing(1.1f, 1.0f, 2200, 0);
+                CSoundCollection.instance().playSound(ESounds.GOODBYE_FEMALE);
+                mSelectedButton.setVisibility(true); // makes it visible again
+                // adds an event to the end of the animation - to finish this application
+                mExitButton.mEndAnimationEvent  = (new Runnable() {
+                    @Override
+                    public void run() {
+                        mSelectedButton.setVisibility(false); // makes it invisble again
+                        System.exit(1);
+                    }
+                });
+            }
+        });
 
         // add all created objects to this list
         // this will be used furthermore for touch detection
         mObjectList.add(mStartButton);
         mObjectList.add(mExitButton);
-        mObjectList.add(mPaladin);
+        //mObjectList.add(mPaladin);
 
-        mHandler = new Handler();
+        //mHandler = new Handler();
     }
 
     @Override
@@ -79,23 +118,18 @@ public class WelcomeScreen extends Screen {
         // draw the screen
         // TODO: make this less complicated
         backgroundRect.set(0, 0, width, height);
+
+        // draws background of this window
         c.drawBitmap(backgroundScreen, null, backgroundRect, mObjectDrawer);
 
-        // draws the start button
-        //mStartButton.draw(c);
-        // draws the exit button (animated)
-        //if ((CSharedUtils.instance().getmHeartBit() % 3) == 0)
-        //{
-        //    factorScal += 0.02f;
-        //    if (factorScal > 4.0f) factorScal = 1.0f;
-        //}
-        //mExitButton.setScaleFactor(factorScal);
-        //mExitButton.draw(c);
-
-        //mPaladin.draw(c);
+        // draws each object according to the insertion order
         for (int i = 0; i < mObjectList.size() ; i++) {
             mObjectList.get(i).draw(c);
         }
+
+        // selected button - if applicable
+        mSelectedButton.draw(c);
+
         // version/copyright line
         colorAltRGB += 0x1;
         if (++colorAltRGB > 0xffffff) colorAltRGB -= 0xffffff;
@@ -104,29 +138,34 @@ public class WelcomeScreen extends Screen {
 
         mObjectDrawer.setTextSize(72);
         mObjectDrawer.setTypeface(CFontCollection.useFont(EFonts.IMMORTAL));
-        String msg = "v"+BuildConfig.VERSION_NAME;
+        String msg = "v" + BuildConfig.VERSION_NAME;
         int xTextEnd = (int)(width*.99f);
         c.drawText(msg, xTextEnd - mObjectDrawer.measureText(msg), height - 80, mObjectDrawer);
-        int w1 = backgroundRect.width();
         msg = "Vagner Landskron";
-        //msg = act.getResources().getText(R.string.app_autor).toString();
         c.drawText(msg, xTextEnd - mObjectDrawer.measureText(msg), height - 40, mObjectDrawer);
     }
 
     @Override
     public boolean onTouch(MotionEvent e) {
-        mHandler.postDelayed(new Runnable() {
-
-            @Override
-            public void run() {
-                //act.startGame();
-                Log.d(MainActivity.LOG_ID, "animation10");
-            }
-        }, 600);
-
+        //mHandler.postDelayed(new Runnable() {
+        //    @Override
+        //    public void run() {
+        //        //act.startGame();
+        //        Log.d(MainActivity.LOG_ID, "animation10");
+        //    }
+        //}, 600);
         for (int i = 0; i < mObjectList.size() ; i++) {
             if (mObjectList.get(i).contains(e.getX(), e.getY())) {
-                mObjectList.get(i).startBouncing(0.5f, 1.0f, 1200);
+
+                if (mObjectList.get(i).mTouchEvent != null) {
+                    mObjectList.get(i).onClickEvent();
+                    // adds nice effect for selection
+                    // bouncing and fade effect
+                    mSelectedButton.setRelativeX(mObjectList.get(i).getRelativeX());
+                    mSelectedButton.setRelativeY(mObjectList.get(i).getRelativeY());
+                    mSelectedButton.startFadeEffect(200, 0, 3500);
+                    mSelectedButton.startBouncing(2.0f, 0.0f, 3500, 0);
+                }
             }
         }
 

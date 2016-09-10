@@ -3,6 +3,7 @@ package lobster.heroquestproj.Renders;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.view.View;
 
 import lobster.heroquestproj.VFramework.CSharedUtils;
 import lobster.heroquestproj.VFramework.CTextureCollection;
@@ -26,7 +27,6 @@ public class CSprite extends CSpriteBase {
         super();
         mTexture = CTextureCollection.instance().getTexture(text);
     }
-
 
     public CSprite(ETexture text, float left, float top, float right, float bottom) {
         super(text, left, top, right, bottom);
@@ -54,12 +54,26 @@ public class CSprite extends CSpriteBase {
     }
 
     public void draw(Canvas c) {
-        setScreenDimensions(CSharedUtils.instance().getmSurfaceView().getWidth(), CSharedUtils.instance().getmSurfaceView().getHeight());
+        // if this layer isn't displayed - do nothing
+        if (mVisible == false) return;
+        // updates the screen dimensions
+        // always assuming that the given coordinates refer to the top left corner
+        if ((mFixedX > 0.0f) && (mFixedY > 0.0f)) {
+            this.left = mFixedX;
+            this.top = mFixedY + (mTexture.getHeight() * mScaleY) ;
+            this.right = mFixedX + (mTexture.getWidth() * mScaleX);
+            this.bottom = mFixedY;
+        } else {
+            setScreenDimensions(CSharedUtils.instance().getmSurfaceView().getWidth(), CSharedUtils.instance().getmSurfaceView().getHeight());
+        }
 
         // draw the screen
         this.set(this.left, this.bottom, this.right, this.top);
+
+        // actually draws this object
         c.drawBitmap(mTexture, null, this, mObjectDrawer);
 
+        // if there is a label - draws it on the screen
         if (mLabel.length() > 0) {
             printLabel(c);
         }

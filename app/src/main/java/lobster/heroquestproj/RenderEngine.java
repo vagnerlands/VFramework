@@ -30,7 +30,10 @@ public class RenderEngine extends SurfaceView implements Runnable, View.OnTouchL
         mSurfaceHolder.setType(SURFACE_TYPE_GPU);
         mCurrentScreen = objScreen;
         setOnTouchListener(this);
+        //this.setlay
     }
+
+    public void setCurrentScreen(Screen newScreen) { mCurrentScreen = newScreen; }
 
     public void resume() {
         isRendering = true;
@@ -57,6 +60,7 @@ public class RenderEngine extends SurfaceView implements Runnable, View.OnTouchL
                 Canvas c = mSurfaceHolder.lockCanvas();
                 // while flipping the screen - this will cause exception cause canvas isn't ready
                 mCurrentScreen.draw(c, this);
+
                 mSurfaceHolder.unlockCanvasAndPost(c);
                 // useful to calculate how many fps
                 // also performs sleep in case that the cycle has passed too fast - avoid frying your cpu
